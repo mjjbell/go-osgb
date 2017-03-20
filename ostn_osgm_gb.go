@@ -2,7 +2,6 @@ package transformation
 
 import (
 	"errors"
-	"log"
 	"math"
 )
 
@@ -48,14 +47,14 @@ type transformer struct {
 
 func (tr *transformer) ToNationalGrid(c *ETRS89Coordinate) (*OSGB36Coordinate, error) {
 	etrs89PlaneCoord := nationalGridProjection.toPlaneCoord(c.Lat, c.Lon, grs80Ellipsoid)
-	osgb36Coord, odnHeight, geoidRegion, err := tr.toOSGB36(&planeCoord{
+	osgb36Coord, odnHeight, _, err := tr.toOSGB36(&planeCoord{
 		Easting:  etrs89PlaneCoord.Easting,
 		Northing: etrs89PlaneCoord.Northing,
 	}, c.Height)
 	if err != nil {
 		return nil, err
 	}
-	log.Println(geoidRegion)
+	//log.Println(geoidRegion)
 	return &OSGB36Coordinate{
 		Easting:  osgb36Coord.Easting,
 		Northing: osgb36Coord.Northing,
