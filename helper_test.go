@@ -1,4 +1,4 @@
-package transformation
+package osgb
 
 import (
 	"math"
