@@ -6,19 +6,22 @@ import (
 
 func TestLatLonHeightToCartesian(t *testing.T) {
 
-	lat, err := LatToRad(52, 39, 27.2531, "N")
+	lat, err := dmsToDecimal(52, 39, 27.2531, north)
 	if err != nil {
 		t.Fatal(err)
 	}
-	lon, err := LonToRad(1, 43, 4.5177, "E")
+	lon, err := dmsToDecimal(1, 43, 4.5177, east)
 	if err != nil {
 		t.Fatal(err)
 	}
 
+	latRadians := degreesToRadians(lat)
+	lonRadians := degreesToRadians(lon)
+
 	geoCoord := &geographicCoord{
-		Lat:    lat,
-		Lon:    lon,
-		Height: 24.700,
+		lat:    latRadians,
+		lon:    lonRadians,
+		height: 24.700,
 	}
 
 	cartCoord := airyEllipsoid.geographicToCartesian(geoCoord)
@@ -26,32 +29,34 @@ func TestLatLonHeightToCartesian(t *testing.T) {
 	expectedY := 116218.624
 	expectedZ := 5047168.207
 
-	checkDistance(t, "x", expectedX, cartCoord.X)
-	checkDistance(t, "y", expectedY, cartCoord.Y)
-	checkDistance(t, "z", expectedZ, cartCoord.Z)
+	checkDistance(t, "x", expectedX, cartCoord.x)
+	checkDistance(t, "y", expectedY, cartCoord.y)
+	checkDistance(t, "z", expectedZ, cartCoord.z)
 }
 
 func TestCartesianToLatLonHeight(t *testing.T) {
 
 	cartesianCoord := &cartesianCoord{
-		X: 3874938.850,
-		Y: 116218.624,
-		Z: 5047168.207,
+		x: 3874938.850,
+		y: 116218.624,
+		z: 5047168.207,
 	}
 
 	geoCoord := airyEllipsoid.cartesianToGeographic(cartesianCoord)
 
-	expectedLat, err := LatToRad(52, 39, 27.2531, "N")
+	expectedLat, err := dmsToDecimal(52, 39, 27.2531, north)
 	if err != nil {
 		t.Fatal(err)
 	}
-	expectedLon, err := LonToRad(1, 43, 4.5177, "E")
+	expectedLon, err := dmsToDecimal(1, 43, 4.5177, east)
 	if err != nil {
 		t.Fatal(err)
 	}
 	expectedHeight := 24.700
+	expectedLatRadians := degreesToRadians(expectedLat)
+	expectedLonRadians := degreesToRadians(expectedLon)
 
-	checkAngle(t, "latitude", expectedLat, geoCoord.Lat)
-	checkAngle(t, "longitude", expectedLon, geoCoord.Lon)
-	checkDistance(t, "height", expectedHeight, geoCoord.Height)
+	checkAngle(t, "latitude", expectedLatRadians, geoCoord.lat)
+	checkAngle(t, "longitude", expectedLonRadians, geoCoord.lon)
+	checkDistance(t, "height", expectedHeight, geoCoord.height)
 }

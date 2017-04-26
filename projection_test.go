@@ -3,42 +3,46 @@ package transformation
 import "testing"
 
 func TestLatLonToEastNort(t *testing.T) {
-	lat, err := LatToRad(52, 39, 27.2531, "N")
+	lat, err := dmsToDecimal(52, 39, 27.2531, north)
 	if err != nil {
 		t.Fatal(err)
 	}
-	lon, err := LonToRad(1, 43, 4.5177, "E")
+	latRadians := degreesToRadians(lat)
+	lon, err := dmsToDecimal(1, 43, 4.5177, east)
 	if err != nil {
 		t.Fatal(err)
 	}
+	lonRadians := degreesToRadians(lon)
 	expectedEast := 651409.903
 	expectedNorth := 313177.270
 
-	coord := nationalGridProjection.toPlaneCoord(lat, lon, airyEllipsoid)
+	coord := nationalGridProjection.toPlaneCoord(latRadians, lonRadians, airyEllipsoid)
 
-	checkDistance(t, "east", expectedEast, coord.Easting)
-	checkDistance(t, "north", expectedNorth, coord.Northing)
+	checkDistance(t, "east", expectedEast, coord.easting)
+	checkDistance(t, "north", expectedNorth, coord.northing)
 }
 
 func TestEastNortToLatLon(t *testing.T) {
-	east := 651409.903
-	north := 313177.270
-	expectedLat, err := LatToRad(52, 39, 27.2531, "N")
+	easting := 651409.903
+	northing := 313177.270
+	expectedLat, err := dmsToDecimal(52, 39, 27.2531, north)
 	if err != nil {
 		t.Fatal(err)
 	}
-	expectedLon, err := LonToRad(1, 43, 4.5177, "E")
+	expectedLatRadians := degreesToRadians(expectedLat)
+	expectedLon, err := dmsToDecimal(1, 43, 4.5177, east)
 	if err != nil {
 		t.Fatal(err)
 	}
+	expectedLonRadians := degreesToRadians(expectedLon)
 
 	coord := &planeCoord{
-		Easting:  east,
-		Northing: north,
+		easting:  easting,
+		northing: northing,
 	}
 
 	lat, lon := nationalGridProjection.fromPlaneCoord(coord, airyEllipsoid)
 
-	checkAngle(t, "latitude", expectedLat, lat)
-	checkAngle(t, "longitude", expectedLon, lon)
+	checkAngle(t, "latitude", expectedLatRadians, lat)
+	checkAngle(t, "longitude", expectedLonRadians, lon)
 }

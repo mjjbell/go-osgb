@@ -28,28 +28,28 @@ func (el *ellipsoid) eccentricity() float64 {
 
 func (el *ellipsoid) geographicToCartesian(c *geographicCoord) *cartesianCoord {
 	eSq := el.eccentricity()
-	v := el.semiMajorAxis / math.Sqrt(1.0-eSq*math.Sin(c.Lat)*math.Sin(c.Lat))
-	x := (v + c.Height) * math.Cos(c.Lat) * math.Cos(c.Lon)
-	y := (v + c.Height) * math.Cos(c.Lat) * math.Sin(c.Lon)
-	z := ((1-eSq)*v + c.Height) * math.Sin(c.Lat)
+	v := el.semiMajorAxis / math.Sqrt(1.0-eSq*math.Sin(c.lat)*math.Sin(c.lat))
+	x := (v + c.height) * math.Cos(c.lat) * math.Cos(c.lon)
+	y := (v + c.height) * math.Cos(c.lat) * math.Sin(c.lon)
+	z := ((1-eSq)*v + c.height) * math.Sin(c.lat)
 	return &cartesianCoord{
-		X: x,
-		Y: y,
-		Z: z,
+		x: x,
+		y: y,
+		z: z,
 	}
 }
 
 func (el *ellipsoid) cartesianToGeographic(c *cartesianCoord) *geographicCoord {
-	lon := math.Atan(c.Y / c.X)
-	p := math.Sqrt(c.X*c.X + c.Y*c.Y)
+	lon := math.Atan(c.y / c.x)
+	p := math.Sqrt(c.x*c.x + c.y*c.y)
 	eSq := el.eccentricity()
-	lat := math.Atan(c.Z / (p * (1 - eSq)))
+	lat := math.Atan(c.z / (p * (1 - eSq)))
 	var v float64
 
 	// Iteratively reach new latitude value
 	for {
 		v = el.semiMajorAxis / math.Sqrt(1.0-eSq*math.Sin(lat)*math.Sin(lat))
-		newLat := math.Atan((c.Z + eSq*v*math.Sin(lat)) / p)
+		newLat := math.Atan((c.z + eSq*v*math.Sin(lat)) / p)
 		const epsilon = 0.00000000001
 		if math.Abs(newLat-lat) < epsilon {
 			break
@@ -58,8 +58,8 @@ func (el *ellipsoid) cartesianToGeographic(c *cartesianCoord) *geographicCoord {
 	}
 	height := p/math.Cos(lat) - v
 	return &geographicCoord{
-		Lat:    lat,
-		Lon:    lon,
-		Height: height,
+		lat:    lat,
+		lon:    lon,
+		height: height,
 	}
 }

@@ -24,7 +24,7 @@ func checkRegion(t *testing.T, name string, expected, actual geoidRegion) {
 }
 
 func equalAngle(a, b float64) bool {
-	const epsilon = 0.0000001
+	const epsilon = 0.0001
 	return math.Abs(a-b) < epsilon
 }
 

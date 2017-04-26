@@ -143,7 +143,7 @@ func read02OutputData() (map[string]ostn02TestOutput, error) {
 		if err != nil {
 			return nil, err
 		}
-		etrs89Lat, err := LatToRad(etrs89LatDeg, etrs89LatMin, etrs89LatSec, etrs89LatNS)
+		etrs89Lat, err := dmsToDecimal(etrs89LatDeg, etrs89LatMin, etrs89LatSec, direction(etrs89LatNS))
 		if err != nil {
 			return nil, err
 		}
@@ -161,7 +161,7 @@ func read02OutputData() (map[string]ostn02TestOutput, error) {
 		if err != nil {
 			return nil, err
 		}
-		etrs89Lon, err := LonToRad(etrs89LonDeg, etrs89LonMin, etrs89LonSec, etrs89LonEW)
+		etrs89Lon, err := dmsToDecimal(etrs89LonDeg, etrs89LonMin, etrs89LonSec, direction(etrs89LonEW))
 		if err != nil {
 			return nil, err
 		}
@@ -217,7 +217,7 @@ func read02OutputData() (map[string]ostn02TestOutput, error) {
 		if err != nil {
 			return nil, err
 		}
-		osgb36Lat, err := LatToRad(osgb36LatDeg, osgb36LatMin, osgb36LatSec, osgb36LatNS)
+		osgb36Lat, err := dmsToDecimal(osgb36LatDeg, osgb36LatMin, osgb36LatSec, direction(osgb36LatNS))
 		if err != nil {
 			return nil, err
 		}
@@ -235,7 +235,7 @@ func read02OutputData() (map[string]ostn02TestOutput, error) {
 		if err != nil {
 			return nil, err
 		}
-		osgb36Lon, err := LonToRad(osgb36LonDeg, osgb36LonMin, osgb36LonSec, osgb36LonEW)
+		osgb36Lon, err := dmsToDecimal(osgb36LonDeg, osgb36LonMin, osgb36LonSec, direction(osgb36LonEW))
 		if err != nil {
 			return nil, err
 		}
@@ -299,24 +299,27 @@ func Test02Data(t *testing.T) {
 		checkDistance(t, "etrs89 z", output.etrs89Z, input.etrs89Z)
 
 		geoCoord := grs80Ellipsoid.cartesianToGeographic(&cartesianCoord{
-			X: input.etrs89X,
-			Y: input.etrs89Y,
-			Z: input.etrs89Z,
+			x: input.etrs89X,
+			y: input.etrs89Y,
+			z: input.etrs89Z,
 		})
 
-		checkAngle(t, "etrs89 latitude", output.etrs89Lat, geoCoord.Lat)
-		checkAngle(t, "etrs89 longitude", output.etrs89Lon, geoCoord.Lon)
-		checkDistance(t, "etrs89 height", output.etrs89Height, geoCoord.Height)
+		latDegrees := radiansToDegrees(geoCoord.lat)
+		lonDegrees := radiansToDegrees(geoCoord.lon)
 
-		etrs89Coord := nationalGridProjection.toPlaneCoord(geoCoord.Lat, geoCoord.Lon, grs80Ellipsoid)
+		checkAngle(t, "etrs89 latitude", output.etrs89Lat, latDegrees)
+		checkAngle(t, "etrs89 longitude", output.etrs89Lon, lonDegrees)
+		checkDistance(t, "etrs89 height", output.etrs89Height, geoCoord.height)
 
-		checkDistance(t, "etrs89 east", output.etrs89Easting, etrs89Coord.Easting)
-		checkDistance(t, "etrs89 north", output.etrs89Northing, etrs89Coord.Northing)
+		etrs89Coord := nationalGridProjection.toPlaneCoord(geoCoord.lat, geoCoord.lon, grs80Ellipsoid)
+
+		checkDistance(t, "etrs89 east", output.etrs89Easting, etrs89Coord.easting)
+		checkDistance(t, "etrs89 north", output.etrs89Northing, etrs89Coord.northing)
 
 		osgb36Coord, err := trans.ToNationalGrid(&ETRS89Coordinate{
-			Lat:    geoCoord.Lat,
-			Lon:    geoCoord.Lon,
-			Height: geoCoord.Height,
+			Lat:    latDegrees,
+			Lon:    lonDegrees,
+			Height: geoCoord.height,
 		})
 
 		if strings.HasPrefix(station, "Outside") {
@@ -339,24 +342,26 @@ func Test02Data(t *testing.T) {
 		checkDistance(t, "osgb36 east", output.osgb36Easting, osgb36Coord.Easting)
 		checkDistance(t, "osgb36 north", output.osgb36Northing, osgb36Coord.Northing)
 		checkDistance(t, "orthometric height", output.odnHeight, osgb36Coord.Height)
-		//		checkRegion(t, "geoid region", output.geoidModelID, geoidRegion)
 
 		osgb36Lat, osgb36Lon := nationalGridProjection.fromPlaneCoord(&planeCoord{
-			Easting:  osgb36Coord.Easting,
-			Northing: osgb36Coord.Northing,
+			easting:  osgb36Coord.Easting,
+			northing: osgb36Coord.Northing,
 		}, airyEllipsoid)
 
-		checkAngle(t, "osgb36 lat", output.osgb36Lat, osgb36Lat)
-		checkAngle(t, "osgb36 lon", output.osgb36Lon, osgb36Lon)
+		osgb36LatDegrees := radiansToDegrees(osgb36Lat)
+		osgb36LonDegrees := radiansToDegrees(osgb36Lon)
+
+		checkAngle(t, "osgb36 lat", output.osgb36Lat, osgb36LatDegrees)
+		checkAngle(t, "osgb36 lon", output.osgb36Lon, osgb36LonDegrees)
 	}
 }
 
 func Test02ETRS89ToOSGB36(t *testing.T) {
-	etrs89Lat, err := LatToRad(52, 39, 28.8282, "N")
+	etrs89Lat, err := dmsToDecimal(52, 39, 28.8282, north)
 	if err != nil {
 		t.Fatal(err)
 	}
-	etrs89Lon, err := LonToRad(1, 42, 57.8663, "E")
+	etrs89Lon, err := dmsToDecimal(1, 42, 57.8663, east)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -372,18 +377,18 @@ func Test02ETRS89ToOSGB36(t *testing.T) {
 	expectedHeight := 63.806
 	//expectedRegion := Region_UK_MAINLAND
 	osgb36Coord, err := trans.ToNationalGrid(&ETRS89Coordinate{
-		lat:    etrs89Lat,
-		lon:    etrs89Lon,
-		height: etrs89Height,
+		Lat:    etrs89Lat,
+		Lon:    etrs89Lon,
+		Height: etrs89Height,
 	})
 	if err != nil {
 		t.Errorf("failed to convert etrs89 to osgb36/odn: %s", err)
 		t.FailNow()
 	}
 
-	checkDistance(t, "national grid east", expectedEasting, osgb36Coord.easting)
-	checkDistance(t, "national grid north", expectedNorthing, osgb36Coord.northing)
-	checkDistance(t, "national grid height", expectedHeight, osgb36Coord.height)
+	checkDistance(t, "national grid east", expectedEasting, osgb36Coord.Easting)
+	checkDistance(t, "national grid north", expectedNorthing, osgb36Coord.Northing)
+	checkDistance(t, "national grid height", expectedHeight, osgb36Coord.Height)
 	//checkRegion(t, "geoid datum ID", expectedRegion, region)
 }
 
@@ -397,30 +402,30 @@ func Test02OSGB36ToETRS89(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	expectedETRS89Lat, err := LatToRad(52, 39, 28.8282, "N")
+	expectedETRS89Lat, err := dmsToDecimal(52, 39, 28.8282, north)
 	if err != nil {
 		t.Fatal(err)
 	}
-	expectedETRS89Lon, err := LonToRad(1, 42, 57.8663, "E")
+	expectedETRS89Lon, err := dmsToDecimal(1, 42, 57.8663, east)
 	if err != nil {
 		t.Fatal(err)
 	}
 	expectedETRS89Height := 108.05
 
 	etrs89Coord, err := trans.FromNationalGrid(&OSGB36Coordinate{
-		easting:  osgb36Easting,
-		northing: osgb36Northing,
-		height:   orthometricHeight,
+		Easting:  osgb36Easting,
+		Northing: osgb36Northing,
+		Height:   orthometricHeight,
 	})
 
-	checkDistance(t, "etrs89 lat", expectedETRS89Lat, etrs89Coord.lat)
-	checkDistance(t, "etrs89 lon", expectedETRS89Lon, etrs89Coord.lon)
-	checkDistance(t, "etrs89 height", expectedETRS89Height, etrs89Coord.height)
+	checkDistance(t, "etrs89 lat", expectedETRS89Lat, etrs89Coord.Lat)
+	checkDistance(t, "etrs89 lon", expectedETRS89Lon, etrs89Coord.Lon)
+	checkDistance(t, "etrs89 height", expectedETRS89Height, etrs89Coord.Height)
 }
 
 func Test02ETRS89ToOSGB36_OutsideTransformationRange(t *testing.T) {
-	etrs89Lat := DegreesToRad(0.0)
-	etrs89Lon := DegreesToRad(0.0)
+	etrs89Lat := 0.0
+	etrs89Lon := 0.0
 	etrs89Height := 0.0
 
 	trans, err := NewOSTN02Transformer()
@@ -429,9 +434,9 @@ func Test02ETRS89ToOSGB36_OutsideTransformationRange(t *testing.T) {
 	}
 
 	_, err = trans.ToNationalGrid(&ETRS89Coordinate{
-		lat:    etrs89Lat,
-		lon:    etrs89Lon,
-		height: etrs89Height,
+		Lat:    etrs89Lat,
+		Lon:    etrs89Lon,
+		Height: etrs89Height,
 	})
 	if err == nil {
 		t.Errorf("expected error when converting etrs89 coords outside ostn02 transformation range")
@@ -448,9 +453,9 @@ func Test02OSGB36ToETRS89_OutsideTransformationRange(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, err = trans.FromNationalGrid(&OSGB36Coordinate{
-		easting:  osgb36Easting,
-		northing: osgb36Northing,
-		height:   odnHeight,
+		Easting:  osgb36Easting,
+		Northing: osgb36Northing,
+		Height:   odnHeight,
 	})
 	if err == nil {
 		t.Errorf("expected error when converting osgb36 coords outside ostn02 transformation range")

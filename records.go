@@ -107,8 +107,8 @@ type shiftRecords struct {
 }
 
 func (tr *transformer) getShiftRecords(etrs89Coord *planeCoord) (*shiftRecords, error) {
-	eastIndex := eastingIndex(etrs89Coord.Easting)
-	northIndex := northingIndex(etrs89Coord.Northing)
+	eastIndex := eastingIndex(etrs89Coord.easting)
+	northIndex := northingIndex(etrs89Coord.northing)
 
 	bl, err := tr.getShiftRecord(eastIndex, northIndex)
 	if err != nil {

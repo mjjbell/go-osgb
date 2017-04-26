@@ -14,12 +14,12 @@ var (
 	nationalGridProjection = &projection{
 		scaleFactor: 0.9996012717,
 		geodeticTrueOrigin: geographicCoord{
-			Lat: DegreesToRad(49.0),
-			Lon: DegreesToRad(-2.0),
+			lat: degreesToRadians(49.0),
+			lon: degreesToRadians(-2.0),
 		},
 		mapTrueOrigin: planeCoord{
-			Easting:  400000,
-			Northing: -100000,
+			easting:  400000,
+			northing: -100000,
 		},
 	}
 )
@@ -32,15 +32,15 @@ func (proj *projection) toPlaneCoord(φ, λ float64, el *ellipsoid) *planeCoord 
 	// e^2 - ellipsoid squared eccentricity constant.
 	e2 := el.eccentricity()
 	// N0 – northing of true origin;
-	n0 := proj.mapTrueOrigin.Northing
+	n0 := proj.mapTrueOrigin.northing
 	// E0 – easting of true origin;
-	e0 := proj.mapTrueOrigin.Easting
+	e0 := proj.mapTrueOrigin.easting
 	// F0 – scale factor on central meridian;
 	f0 := proj.scaleFactor
 	// φ0 – latitude of true origin; and
-	φ0 := proj.geodeticTrueOrigin.Lat
+	φ0 := proj.geodeticTrueOrigin.lat
 	// λ0 – longitude of true origin and central meridian.
-	λ0 := proj.geodeticTrueOrigin.Lon
+	λ0 := proj.geodeticTrueOrigin.lon
 
 	// (B2) n = a−b/a+b
 	n := (a - b) / (a + b)
@@ -128,8 +128,8 @@ func (proj *projection) toPlaneCoord(φ, λ float64, el *ellipsoid) *planeCoord 
 	easting := e0 + siv*dλ0 + sv*d3λ0 + svi*d5λ0
 
 	return &planeCoord{
-		Easting:  easting,
-		Northing: northing,
+		easting:  easting,
+		northing: northing,
 	}
 }
 
@@ -141,15 +141,15 @@ func (proj *projection) fromPlaneCoord(coord *planeCoord, el *ellipsoid) (float6
 	// e^2 - ellipsoid squared eccentricity constant.
 	e2 := el.eccentricity()
 	// N0 – northing of true origin;
-	n0 := proj.mapTrueOrigin.Northing
+	n0 := proj.mapTrueOrigin.northing
 	// E0 – easting of true origin;
-	e0 := proj.mapTrueOrigin.Easting
+	e0 := proj.mapTrueOrigin.easting
 	// F0 – scale factor on central meridian;
 	f0 := proj.scaleFactor
 	// φ0 – latitude of true origin; and
-	φ0 := proj.geodeticTrueOrigin.Lat
+	φ0 := proj.geodeticTrueOrigin.lat
 	// λ0 – longitude of true origin and central meridian.
-	λ0 := proj.geodeticTrueOrigin.Lon
+	λ0 := proj.geodeticTrueOrigin.lon
 	// (B2) n = a−b/a+b
 	n := (a - b) / (a + b)
 
@@ -159,7 +159,7 @@ func (proj *projection) fromPlaneCoord(coord *planeCoord, el *ellipsoid) (float6
 	for {
 
 		// (C2) φnew = (N-N0-M)/(aF0) +φ′
-		φ = φ + (coord.Northing-(n0+m))/(a*f0)
+		φ = φ + (coord.northing-(n0+m))/(a*f0)
 
 		// n^2
 		n2 := n * n
@@ -182,7 +182,7 @@ func (proj *projection) fromPlaneCoord(coord *planeCoord, el *ellipsoid) (float6
 
 		// (B6) M = bF0 (Ma - Mb + Mc - Md)
 		m = b * f0 * (ma + mc - (mb + md))
-		if coord.Northing-(n0+m) < 0.00001 {
+		if coord.northing-(n0+m) < 0.00001 {
 			break
 		}
 	}
@@ -231,7 +231,7 @@ func (proj *projection) fromPlaneCoord(coord *planeCoord, el *ellipsoid) (float6
 	sxiia := (1 / (5040 * ν7 * cφ)) * (61 + 662*t2φ + 1320*t4φ + 720*t6φ)
 
 	// E−E0
-	de := coord.Easting - e0
+	de := coord.easting - e0
 	// (E−E0)^2
 	d2e := de * de
 	// (E−E0)^3

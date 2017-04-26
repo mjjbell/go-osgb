@@ -46,44 +46,48 @@ type transformer struct {
 }
 
 func (tr *transformer) ToNationalGrid(c *ETRS89Coordinate) (*OSGB36Coordinate, error) {
-	etrs89PlaneCoord := nationalGridProjection.toPlaneCoord(c.Lat, c.Lon, grs80Ellipsoid)
+	latRadians := degreesToRadians(c.Lat)
+	lonRadians := degreesToRadians(c.Lon)
+	etrs89PlaneCoord := nationalGridProjection.toPlaneCoord(latRadians, lonRadians, grs80Ellipsoid)
 	osgb36Coord, odnHeight, _, err := tr.toOSGB36(&planeCoord{
-		Easting:  etrs89PlaneCoord.Easting,
-		Northing: etrs89PlaneCoord.Northing,
+		easting:  etrs89PlaneCoord.easting,
+		northing: etrs89PlaneCoord.northing,
 	}, c.Height)
 	if err != nil {
 		return nil, err
 	}
-	//log.Println(geoidRegion)
 	return &OSGB36Coordinate{
-		Easting:  osgb36Coord.Easting,
-		Northing: osgb36Coord.Northing,
+		Easting:  osgb36Coord.easting,
+		Northing: osgb36Coord.northing,
 		Height:   odnHeight,
 	}, nil
 }
 
 func (tr *transformer) FromNationalGrid(c *OSGB36Coordinate) (*ETRS89Coordinate, error) {
 	etrs89Coord, etrs89Height, err := tr.fromOSGB36(&planeCoord{
-		Easting:  c.Easting,
-		Northing: c.Northing,
+		easting:  c.Easting,
+		northing: c.Northing,
 	}, c.Height)
 	if err != nil {
 		return nil, err
 	}
 
 	etrs89Lat, etrs89Lon := nationalGridProjection.fromPlaneCoord(etrs89Coord, grs80Ellipsoid)
+	degreeLat := radiansToDegrees(etrs89Lat)
+	degreeLon := radiansToDegrees(etrs89Lon)
+
 	return &ETRS89Coordinate{
-		Lat:    etrs89Lat,
-		Lon:    etrs89Lon,
+		Lat:    degreeLat,
+		Lon:    degreeLon,
 		Height: etrs89Height,
 	}, nil
 }
 
 func nearestGeoidRegion(etrs89Coord *planeCoord, rs *shiftRecords) geoidRegion {
 
-	dx := etrs89Coord.Easting - float64(rs.s0.etrs89Easting)
+	dx := etrs89Coord.easting - float64(rs.s0.etrs89Easting)
 	t := dx / 1000.0
-	dy := etrs89Coord.Northing - float64(rs.s0.etrs89Northing)
+	dy := etrs89Coord.northing - float64(rs.s0.etrs89Northing)
 	u := dy / 1000.0
 
 	if t <= 0.5 && u <= 0.5 {
@@ -104,10 +108,10 @@ func (tr *transformer) toOSGB36(etrs89Coord *planeCoord, etrs89Height float64) (
 		return nil, 0, Region_FOULA, err
 	}
 
-	dx := etrs89Coord.Easting - float64(rs.s0.etrs89Easting)
+	dx := etrs89Coord.easting - float64(rs.s0.etrs89Easting)
 	t := dx / 1000.0
 	it := 1 - t
-	dy := etrs89Coord.Northing - float64(rs.s0.etrs89Northing)
+	dy := etrs89Coord.northing - float64(rs.s0.etrs89Northing)
 	u := dy / 1000.0
 	iu := 1 - u
 	shiftEast := it*iu*rs.s0.ostnEastShift +
@@ -128,16 +132,16 @@ func (tr *transformer) toOSGB36(etrs89Coord *planeCoord, etrs89Height float64) (
 	geoidRegion := nearestGeoidRegion(etrs89Coord, rs)
 
 	return &planeCoord{
-		Easting:  etrs89Coord.Easting + shiftEast,
-		Northing: etrs89Coord.Northing + shiftNorth,
+		easting:  etrs89Coord.easting + shiftEast,
+		northing: etrs89Coord.northing + shiftNorth,
 	}, etrs89Height - geoidHeight, geoidRegion, nil
 }
 
 func (tr *transformer) fromOSGB36(osgb36Coord *planeCoord, odnHeight float64) (*planeCoord, float64, error) {
 
 	etrs89Coord := &planeCoord{
-		Easting:  osgb36Coord.Easting,
-		Northing: osgb36Coord.Northing,
+		easting:  osgb36Coord.easting,
+		northing: osgb36Coord.northing,
 	}
 	etrs89Height := odnHeight
 
@@ -149,10 +153,10 @@ func (tr *transformer) fromOSGB36(osgb36Coord *planeCoord, odnHeight float64) (*
 			return nil, 0, err
 		}
 
-		dx := etrs89Coord.Easting - float64(rs.s0.etrs89Easting)
+		dx := etrs89Coord.easting - float64(rs.s0.etrs89Easting)
 		t := dx / 1000.0
 		it := 1 - t
-		dy := etrs89Coord.Northing - float64(rs.s0.etrs89Northing)
+		dy := etrs89Coord.northing - float64(rs.s0.etrs89Northing)
 		u := dy / 1000.0
 		iu := 1 - u
 		shiftEast := it*iu*rs.s0.ostnEastShift +
@@ -172,16 +176,16 @@ func (tr *transformer) fromOSGB36(osgb36Coord *planeCoord, odnHeight float64) (*
 
 		const epsilon = 0.0001
 
-		newEasting := osgb36Coord.Easting - shiftEast
-		newNorthing := osgb36Coord.Northing - shiftNorth
+		newEasting := osgb36Coord.easting - shiftEast
+		newNorthing := osgb36Coord.northing - shiftNorth
 		newHeight := odnHeight + geoidHeight
-		if math.Abs(etrs89Coord.Easting-newEasting) <= epsilon &&
-			math.Abs(etrs89Coord.Northing-newNorthing) <= epsilon &&
+		if math.Abs(etrs89Coord.easting-newEasting) <= epsilon &&
+			math.Abs(etrs89Coord.northing-newNorthing) <= epsilon &&
 			math.Abs(etrs89Height-newHeight) <= epsilon {
 			break
 		}
-		etrs89Coord.Easting = newEasting
-		etrs89Coord.Northing = newNorthing
+		etrs89Coord.easting = newEasting
+		etrs89Coord.northing = newNorthing
 		etrs89Height = newHeight
 	}
 
