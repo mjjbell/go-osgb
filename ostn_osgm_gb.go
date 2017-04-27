@@ -5,8 +5,12 @@ import (
 	"math"
 )
 
-var ErrPointOutsidePolygon = errors.New("point outside polygon")
-var ErrPointOutsideTransformation = errors.New("point outside transformation limits")
+var (
+	// ErrPointOutsidePolygon indicates the position is too far offshore to be transformed.
+	ErrPointOutsidePolygon = errors.New("point outside polygon")
+	// ErrPointOutsideTransformation indicates the position is completely outside the grid transformation extent
+	ErrPointOutsideTransformation = errors.New("point outside transformation limits")
+)
 
 const (
 	nEastIndices            = 701
@@ -36,8 +40,11 @@ const (
 	Region_OUTSIDE_TRANSFORMATION geoidRegion = 16 // 15
 )
 
+// CoordinateTransformer is used to convert between OSGB36/ODN and ETRS89 geodetic datums
 type CoordinateTransformer interface {
+	// ToNationalGrid coverts a coordinate position from ETRS89 to OSGB36/ODN
 	ToNationalGrid(c *ETRS89Coordinate) (*OSGB36Coordinate, error)
+	// FromNationalGrid coverts a coordinate position from OSGB36/ODN to ETRS89
 	FromNationalGrid(c *OSGB36Coordinate) (*ETRS89Coordinate, error)
 }
 

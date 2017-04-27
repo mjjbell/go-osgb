@@ -19,23 +19,40 @@ const (
 	west  direction = "W"
 )
 
+// ETRS89Coordinate represents a coordinate position in
+// the ETRS89 geodetic datum. Whilst not being identical
+// this can be treated as a GPS coordinate.
 type ETRS89Coordinate struct {
-	Lat, Lon, Height float64
+	// Longitude in decimal degrees
+	Lon float64
+	// Latitude in decimal degrees
+	Lat float64
+	// Height in metres
+	Height float64
 }
 
-type OSGB36Coordinate struct {
-	Easting, Northing, Height float64
-}
-
-func NewETRS89Radians(lat, lon, height float64) *ETRS89Coordinate {
+// NewETRS89Coord creates a new coordinate position in the ETRS89 geodetic datum.
+func NewETRS89Coord(lon, lat, height float64) *ETRS89Coordinate {
 	return &ETRS89Coordinate{
-		Lat:    lat,
 		Lon:    lon,
+		Lat:    lat,
 		Height: height,
 	}
 }
 
-func NewOSGB36(easting, northing, height float64) *OSGB36Coordinate {
+// OSGB36Coordinate represents a coordinate position in
+// the OSGB36/ODN geodetic datum.
+type OSGB36Coordinate struct {
+	// Easting in metres
+	Easting float64
+	// Northing in metres
+	Northing float64
+	// Height in metres
+	Height float64
+}
+
+// NewOSGB36Coord creates a new coordinate position in the OSGB36/ODN geodetic datum.
+func NewOSGB36Coord(easting, northing, height float64) *OSGB36Coordinate {
 	return &OSGB36Coordinate{
 		Easting:  easting,
 		Northing: northing,

@@ -29,7 +29,6 @@ func readRecords(translationVectorFile string) ([]record, error) {
 	}
 
 	r := csv.NewReader(bytes.NewReader(data))
-	log.Printf("Reading data from %s...\n", translationVectorFile)
 	// Read header
 	if _, err := r.Read(); err != nil {
 		return nil, err
@@ -83,7 +82,6 @@ func readRecords(translationVectorFile string) ([]record, error) {
 				geoidRegion:     geoidDatumToRegion(geoidDatum),
 			})
 	}
-	log.Printf("Reading %s data completed...\n", translationVectorFile)
 	return res, nil
 }
 
