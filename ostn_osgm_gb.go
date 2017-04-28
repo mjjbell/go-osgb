@@ -103,9 +103,8 @@ func nearestGeoidRegion(etrs89Coord *planeCoord, rs *shiftRecords) geoidRegion {
 		return rs.s1.geoidRegion
 	} else if t > 0.5 {
 		return rs.s2.geoidRegion
-	} else {
-		return rs.s3.geoidRegion
 	}
+	return rs.s3.geoidRegion
 }
 
 func (tr *transformer) toOSGB36(etrs89Coord *planeCoord, etrs89Height float64) (*planeCoord, float64, geoidRegion, error) {
@@ -199,6 +198,7 @@ func (tr *transformer) fromOSGB36(osgb36Coord *planeCoord, odnHeight float64) (*
 	return etrs89Coord, etrs89Height, nil
 }
 
+// NewOSTN02Transformer returns a transformer that uses OSTN02/OSGM02
 func NewOSTN02Transformer() (CoordinateTransformer, error) {
 	records, err := readRecords(translationVectorFile02)
 	if err != nil {
@@ -209,6 +209,7 @@ func NewOSTN02Transformer() (CoordinateTransformer, error) {
 	}, nil
 }
 
+// NewOSTN15Transformer returns a transformer that uses OSTN15/OSGM15
 func NewOSTN15Transformer() (CoordinateTransformer, error) {
 	records, err := readRecords(translationVectorFile15)
 	if err != nil {
