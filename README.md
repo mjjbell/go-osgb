@@ -1,6 +1,8 @@
 go-osgb
 ============
 
+[![GoDoc](https://godoc.org/github.com/fofanov/go-osgb?status.svg)](https://godoc.org/github.com/fofanov/go-osgb)
+
 A Go library for performing accurate conversions between OS National Grid and GPS coordinates. (More technically, coordinate transformations between the OSGB36/ODN and ETRS89 geodetic datums)
 
 Why would I need this?
