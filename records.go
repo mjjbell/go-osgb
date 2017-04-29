@@ -7,6 +7,8 @@ import (
 	"log"
 	"math"
 	"strconv"
+
+	"gitlab.com/LocationHawk/go-osgb/internal/data"
 )
 
 type record struct {
@@ -23,7 +25,7 @@ func readRecords(translationVectorFile string) ([]record, error) {
 
 	res := []record{}
 
-	data, err := Asset(translationVectorFile)
+	data, err := data.Asset(translationVectorFile)
 	if err != nil {
 		return nil, err
 	}
