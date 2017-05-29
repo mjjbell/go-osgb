@@ -64,7 +64,7 @@ Converting from GPS to National Grid
         lon := -0.1262
         lat := 51.5080
         height := 10.5
-        gpsCoord := osgb.NewETRS89Coord(lon, lat height)
+        gpsCoord := osgb.NewETRS89Coord(lon, lat, height)
         nationalGridCoord, err := trans.ToNationalGrid(gpsCoord)
         if err != nil {
             log.Fatal(err)
