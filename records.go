@@ -8,7 +8,7 @@ import (
 	"math"
 	"strconv"
 
-	"gitlab.com/LocationHawk/go-osgb/internal/data"
+	"github.com/fofanov/go-osgb/internal/data"
 )
 
 type record struct {
