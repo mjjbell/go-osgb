@@ -1,7 +1,7 @@
 go-osgb
 ============
 
-[![GoDoc](https://godoc.org/github.com/fofanov/go-osgb?status.svg)](https://godoc.org/github.com/fofanov/go-osgb)
+[![GoDoc](https://godoc.org/github.com/mjjbell/go-osgb?status.svg)](https://godoc.org/github.com/mjjbell/go-osgb)
 
 A Go library for performing accurate conversions between OS National Grid and GPS coordinates. (More technically, coordinate transformations between the OSGB36/ODN and ETRS89 geodetic datums)
 
@@ -17,7 +17,7 @@ Features
 
 Installation
 ------------
-    go get github.com/fofanov/go-osgb
+    go get github.com/mjjbell/go-osgb
 
 Usage
 ------------
@@ -26,7 +26,7 @@ Converting from National Grid to GPS
     import (
         "log"
 
-        osgb "github.com/fofanov/go-osgb"
+        osgb "github.com/mjjbell/go-osgb"
     )
 
     func main() {
@@ -52,7 +52,7 @@ Converting from GPS to National Grid
     import (
         "log"
 
-        osgb "github.com/fofanov/go-osgb"
+        osgb "github.com/mjjbell/go-osgb"
     )
 
     func main() {
